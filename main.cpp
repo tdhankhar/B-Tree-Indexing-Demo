@@ -12,6 +12,10 @@
 # define DELIMITER ", "
 
 using namespace std;
+
+
+// DB functions
+
 vector<string> printDBList(){
     cout<<"List of existing Databases : \n";
     fstream list_file;
@@ -116,6 +120,9 @@ void createIndex(string db_name){
     }
     return;
 }
+
+// File utility functions
+
 vector<string> getRow(string row){
     vector<string> cols;
     string val = "";
@@ -156,6 +163,9 @@ void setFile(string base, string file_name, vector<vector<string>> file_vector){
     }
     file.close();
 }
+
+// Table functions
+
 void createSchema(string db_name){
     vector<vector<string>> info_vector = getFile(db_name, "info");
     if(info_vector[0][1] == "0"){
@@ -184,7 +194,8 @@ void createSchema(string db_name){
     info_vector[4][1] = "null";
     setFile(db_name, "info", info_vector);
 }
-//-----------------------------------------------------------------------------------------------------------------------------------------
+
+// B-Tree remove functions
 
 vector<string> getPred(string db_name, string root, vector<vector<string>> root_vector){
     int n = root_vector.size();
@@ -502,7 +513,8 @@ void removeIndex(string db_name, string index){
     setFile(db_name, "info", info_vector);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------
+// B-Tree search functions
+
 bool searchUtil(string db_name, string index, string root){
     if(root == "null") return false;
     vector<vector<string>> root_vector = getFile(db_name + "/index", root);
@@ -538,10 +550,16 @@ bool searchUtil(string db_name, string index, string root){
 }
 bool searchIndex(string db_name, string index){
     vector<vector<string>> info_vector = getFile(db_name, "info");
+    int size = stoi(info_vector[2][1]);
+    if(size == 0){
+        return false;
+    }
     string root = info_vector[4][1];
     return searchUtil(db_name, index, root);
 }
-//---------------------------------------------------------------------------------------------------------------------------------------
+
+// B-Tree insert functions
+
 void splitNode(string db_name, string& root, vector<vector<string>>& root_vector, string& child, vector<vector<string>>& child_vector, int i){
     int cn = child_vector.size();
     int mid = (cn-1)/2 + 1;
@@ -783,7 +801,8 @@ void insertTable(string db_name, vector<string> row){
     info_vector[4][1] = root;
     setFile(db_name, "info", info_vector);
 }
-//--------------------------------------------------------------------------------------------------------------------------------------
+
+// Other utility functions
 
 vector<string> split(string query){
     vector<string> res;
@@ -829,10 +848,17 @@ int main(){
     system("clear");
     
     cout<<"Basic queries :\n";
-    cout<<"create db <database_name> (name must contain less than 10 characters) -> Creates a new Database\n";
+
+    cout<<"create db <database_name> (name must contain less than 10 characters) -> Create a new Database\n";
     cout<<"enter db <database_name> (name must contain less than 10 characters) -> Access the Database\n";
-    cout<<"remove db <database_name> (name must contain less than 10 characters) -> Removes the Database\n";
-    cout<<"exit db <database_name> (name must contain less than 10 characters) -> Exits the Database\n";
+    cout<<"remove db <database_name> (name must contain less than 10 characters) -> Remove the Database\n";
+    cout<<"exit db <database_name> (name must contain less than 10 characters) -> Exit the Database\n";
+
+    cout<<"create new table (specify schema) -> Creates a new Table\n";
+    cout<<"insert into table (enter values according to the schema) -> Insert a new record in the Table\n";
+    cout<<"delete from table (enter the index to be deleted) -> Delete a new record from the Table\n";
+    cout<<"search in table (enter the index to be searched) -> Search the Table\n";
+
     stack<string> stk;
     while(1){
         cout<<"\n";
@@ -941,15 +967,10 @@ int main(){
                 if(found == false){
                     cout<<"index not found\n";
                 }
-            }else if((q_tokens[0] == "remove") && q_tokens[1] == "full" && q_tokens[2] == "table"){
-                // Delete all blocks and schema
-                // Create new info file
-                string name = q_tokens[2];
             }else{
                 cout<<"command not found\n";
             }
         }
     }
-
     return 0;
 }
